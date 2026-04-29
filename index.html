@@ -2,34 +2,32 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>الخارطة الاستثمارية السياحية - ليبيا</title>
-    <!-- Leaflet CSS & JS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الخارطة الاستثمارية السياحية - ليبيا (نسخة محسنة)</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- PapaParse لقراءة CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
+        /* نفس الأنماط السابقة مع تحسين طفيف */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', 'Cairo', Tahoma, sans-serif; background: #f0f4f8; color: #1e2a3a; }
+        body { font-family: 'Segoe UI', 'Cairo', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f8; color: #1e2a3a; }
         .app-container { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .header { background: linear-gradient(135deg, #1e5631, #2e7d32); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; }
+        .header { background: linear-gradient(135deg, #1e5631, #2e7d32); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; z-index: 10; }
         .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
         .stats-badge { background: rgba(255,255,255,0.2); padding: 0.3rem 0.8rem; border-radius: 30px; font-size: 0.85rem; }
         .main-content { display: flex; flex: 1; overflow: hidden; }
-        .filters-panel { width: 280px; background: white; border-left: 1px solid #ddd; padding: 1rem; overflow-y: auto; box-shadow: -2px 0 8px rgba(0,0,0,0.05); z-index: 5; }
+        .filters-panel { width: 280px; background: white; border-left: 1px solid #ddd; padding: 1rem; overflow-y: auto; z-index: 5; }
         .filter-section { margin-bottom: 1.5rem; }
         .filter-section h3 { font-size: 1rem; margin-bottom: 0.5rem; color: #1e5631; border-right: 3px solid #2e7d32; padding-right: 10px; }
-        .filter-group label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-bottom: 8px; cursor: pointer; }
-        select, input.search-input { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 20px; font-family: inherit; }
-        .reset-btn { background: #e0e0e0; border: none; padding: 8px 12px; border-radius: 20px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold; transition: 0.2s; }
+        .filter-group label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; }
+        select, .search-input { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 20px; font-family: inherit; }
+        .reset-btn { background: #e0e0e0; border: none; padding: 8px 12px; border-radius: 20px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold; }
         .reset-btn:hover { background: #ccc; }
         .map-container { flex: 1; position: relative; }
         #map { height: 100%; width: 100%; }
-        .table-section { background: white; border-top: 1px solid #ddd; max-height: 40%; overflow: auto; transition: 0.3s; }
-        .table-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: #f8f9fa; cursor: pointer; border-bottom: 1px solid #ddd; }
+        .table-section { background: white; border-top: 1px solid #ddd; max-height: 40%; overflow: auto; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: #f8f9fa; cursor: pointer; }
         .table-header h3 { font-size: 1rem; }
         .table-container { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
@@ -38,10 +36,8 @@
         tr:hover { background: #f1f9f0; }
         .badge { background: #2e7d32; color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; display: inline-block; }
         .badge-planned { background: #ff8c00; }
+        .custom-div-icon i { text-shadow: 0 0 3px white; font-size: 26px; }
         @media (max-width: 768px) { .filters-panel { width: 240px; } .header h1 { font-size: 1.2rem; } }
-        .leaflet-popup-content { font-size: 0.85rem; line-height: 1.4; min-width: 200px; }
-        .custom-div-icon i { text-shadow: 0 0 3px white; }
-        .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: white; padding: 1rem; border-radius: 8px; z-index: 1000; }
     </style>
 </head>
 <body>
@@ -55,12 +51,12 @@
             <div class="filter-section">
                 <h3><i class="fas fa-filter"></i> التصفية</h3>
                 <div class="filter-group">
-                    <label><i class="fas fa-map-marker-alt"></i> المنطقة:</label>
+                    <label>المنطقة:</label>
                     <select id="regionFilter"><option value="all">جميع المناطق</option></select>
-                    <label><i class="fas fa-tag"></i> الحالة:</label>
+                    <label>الحالة:</label>
                     <select id="statusFilter">
                         <option value="all">الكل</option>
-                        <option value="تم تخريطه">✅ تم تخريطه (صبغة سياحية)</option>
+                        <option value="تم تخريطه">✅ تم تخريطه</option>
                         <option value="محدد للتخريط">🟠 محدد للتخريط</option>
                     </select>
                     <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث بالاسم...">
@@ -69,43 +65,64 @@
             </div>
             <div class="filter-section">
                 <h3><i class="fas fa-info-circle"></i> معلومات</h3>
-                <p style="font-size:0.8rem;">الخريطة تعرض 145 موقعاً (تم تخريطه + محدد للتخريط). اضغط على أيقونة الموقع لرؤية التفاصيل.</p>
-                <hr>
-                <p style="font-size:0.75rem;"><i class="fas fa-leaf"></i> <strong>تم تخريطه:</strong> صبغة سياحية رسمية<br>
-                <i class="fas fa-clock"></i> <strong>محدد للتخريط:</strong> مواقع مقترحة للتخطيط</p>
+                <p style="font-size:0.8rem;">الخريطة تعرض 145 موقعاً مع إحداثيات محسّنة. اضغط على الأيقونة للتفاصيل.</p>
             </div>
         </div>
         <div class="map-container">
             <div id="map"></div>
         </div>
     </div>
-    <div class="table-section" id="tableSection">
+    <div class="table-section">
         <div class="table-header" id="toggleTable">
-            <h3><i class="fas fa-table"></i> قائمة المواقع الاستثمارية</h3>
+            <h3><i class="fas fa-table"></i> قائمة المواقع</h3>
             <i class="fas fa-chevron-up" id="tableToggleIcon"></i>
         </div>
         <div class="table-container" id="tableContainer">
-            <table id="sitesTable"><thead><tr><th>#</th><th>اسم الموقع</th><th>المنطقة</th><th>المساحة (هكتار)</th><th>الحالة</th></tr></thead><tbody></tbody></table>
+            <table id="sitesTable"><thead><tr><th>#</th><th>الاسم</th><th>المنطقة</th><th>المساحة</th><th>الحالة</th></tr></thead><tbody></tbody></table>
         </div>
     </div>
 </div>
 <script>
     let sitesData = [];
-    let map, markersLayer, currentFiltered = [];
-    let regionCoords = {
-        "النقاط الخمس": [32.9, 12.08], "الزاويه": [32.75, 12.73], "الجفارة": [32.8, 13.0], "طرابلس": [32.8872, 13.1913],
-        "المرقب": [32.65, 14.27], "مصراتة": [32.375, 15.09], "سرت": [31.205, 16.59], "بنغازي": [32.1167, 20.0668],
-        "المرج": [32.5, 20.83], "الجبل الأخضر": [32.76, 21.75], "درنة": [32.78, 22.64], "البطنان": [32.0, 24.0],
-        "غات": [24.96, 10.18], "الواحات": [29.2, 21.56]
+    let map, markersLayer;
+
+    // إحداثيات حقيقية للمواقع المعروفة
+    const knownCoords = {
+        "قاريونس": [32.0948, 20.0680], "سيدي خليفة": [32.1500, 20.0300], "عين زيانة": [32.1167, 20.0440],
+        "ثرية": [31.9500, 20.2000], "القبيبة": [31.2300, 16.5600], "الزعفران": [31.2200, 16.5500],
+        "سلطان": [31.0500, 16.9000], "الدافنية": [32.5000, 14.6000], "زليتن": [32.4670, 14.5630],
+        "العرعار": [32.3760, 15.0885], "المثلث الرملي": [32.6400, 14.2400], "سيدي عمير (1)": [32.7000, 14.1000],
+        "النقازة": [32.5800, 14.0600], "مليته 1": [32.9200, 12.0800], "تليل شرقاً": [32.9000, 12.0500],
+        "مصيف صرمان": [32.7700, 12.5800], "الغيران": [32.8000, 13.0240], "جنزور 1": [32.8000, 13.1000],
+        "الفوار": [32.8800, 13.1900], "القولف": [32.8850, 13.1950], "شاطئ النخيل": [32.8820, 13.1700],
+        "جرجار أمه": [32.7600, 21.5400], "مويلح": [32.7500, 21.5000], "الحمامة": [32.8000, 21.6000],
+        "الدليس": [32.8200, 22.6300], "الأثرون": [32.8200, 22.7500], "رأس التين": [32.9000, 23.2000],
+        "رأس بياض": [31.9900, 24.2600], "البردي (1)": [31.7500, 25.0200], "أبو ترابة": [32.6880, 20.9150],
+        "طلميتة": [32.7400, 20.9500], "المصيف القديم": [32.7000, 20.9000], "كركورة": [32.0000, 20.4000],
+        "المقرون": [31.9800, 20.3000], "الساحل الغربي": [32.0500, 20.1000], "سيدي حبيب": [32.1200, 20.0800],
+        "هراوة": [31.3000, 16.8000], "القرضابية": [31.2500, 16.7500], "العسيلة (1)": [31.2000, 16.9000],
+        "بن جواد": [31.0500, 16.7000], "راس الأنوف (1)": [30.5000, 18.5000]
     };
-    function getCoords(region, idx) {
-        let base = regionCoords[region] || [28.0, 17.0];
-        let angle = (idx * 137.5) % 360;
-        let radius = 0.04 + (idx % 37) * 0.002;
+
+    // مراكز المناطق الاحتياطية
+    const regionCenters = {
+        "النقاط الخمس": [32.92, 12.08], "الزاويه": [32.77, 12.58], "الجفارة": [32.80, 13.02],
+        "طرابلس": [32.887, 13.191], "المرقب": [32.65, 14.27], "مصراتة": [32.375, 15.09],
+        "سرت": [31.205, 16.59], "بنغازي": [32.1167, 20.0668], "المرج": [32.50, 20.83],
+        "الجبل الأخضر": [32.76, 21.75], "درنة": [32.78, 22.64], "البطنان": [32.00, 24.00],
+        "غات": [24.96, 10.18], "الواحات": [29.20, 21.56]
+    };
+
+    function getCoord(siteName, region, idx) {
+        if (knownCoords[siteName]) return knownCoords[siteName];
+        let base = regionCenters[region] || [28.0, 17.0];
+        let angle = (idx * 31) % 360;
+        let radius = 0.02 + (idx % 40) * 0.0015;
         let deltaLat = radius * Math.cos(angle * Math.PI/180);
         let deltaLng = radius * Math.sin(angle * Math.PI/180);
         return [base[0] + deltaLat, base[1] + deltaLng];
     }
+
     function initMap() {
         map = L.map('map').setView([28.0, 17.0], 6);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -114,17 +131,18 @@
         }).addTo(map);
         markersLayer = L.layerGroup().addTo(map);
     }
+
     function updateMap(filtered) {
         markersLayer.clearLayers();
         filtered.forEach((site, idx) => {
-            let coords = getCoords(site["المنطقة"], idx);
+            let coords = getCoord(site["اسم الموقع"], site["المنطقة"], idx);
             let color = site["الحالة"] === "تم تخريطه" ? "#2e7d32" : "#ff8c00";
-            let icon = L.divIcon({ html: `<i class="fas fa-map-marker-alt" style="color:${color}; font-size:26px; text-shadow:0 0 3px white;"></i>`, iconSize: [26, 26], className: 'custom-div-icon' });
+            let icon = L.divIcon({ html: `<i class="fas fa-map-marker-alt" style="color:${color};"></i>`, iconSize: [26, 26], className: 'custom-div-icon' });
             let marker = L.marker(coords, { icon: icon }).addTo(markersLayer);
             marker.bindPopup(`
                 <strong>${site["اسم الموقع"]}</strong><br>
                 <b>المنطقة:</b> ${site["المنطقة"]}<br>
-                <b>المساحة:</b> ${site["المساحة (هكتار)"]} هكتار<br>
+                <b>المساحة:</b> ${site["المساحة"]} هكتار<br>
                 <b>الحالة:</b> ${site["الحالة"]}<br>
                 ${site["قرار"] ? `<b>القرار:</b> ${site["قرار"]}<br>` : ''}
                 ${site["ملاحظات"] ? `<b>ملاحظة:</b> ${site["ملاحظات"]}` : ''}
@@ -136,6 +154,7 @@
         } else map.setView([28.0, 17.0], 6);
         document.getElementById('statsLabel').innerHTML = `<i class="fas fa-chart-line"></i> ${filtered.length} موقع (إجمالي ${sitesData.length})`;
     }
+
     function renderTable(data) {
         let tbody = document.querySelector('#sitesTable tbody');
         tbody.innerHTML = '';
@@ -144,11 +163,12 @@
             row.insertCell(0).innerText = i+1;
             row.insertCell(1).innerText = site["اسم الموقع"];
             row.insertCell(2).innerText = site["المنطقة"];
-            row.insertCell(3).innerText = site["المساحة (هكتار)"];
+            row.insertCell(3).innerText = site["المساحة"];
             let statusCell = row.insertCell(4);
             statusCell.innerHTML = `<span class="badge ${site["الحالة"] === 'محدد للتخريط' ? 'badge-planned' : ''}">${site["الحالة"]}</span>`;
         });
     }
+
     function filterSites() {
         let region = document.getElementById('regionFilter').value;
         let status = document.getElementById('statusFilter').value;
@@ -159,10 +179,10 @@
             if (search && !s["اسم الموقع"].toLowerCase().includes(search) && !s["المنطقة"].toLowerCase().includes(search)) return false;
             return true;
         });
-        currentFiltered = filtered;
         renderTable(filtered);
         updateMap(filtered);
     }
+
     function loadCSV() {
         Papa.parse("sites.csv", {
             download: true,
@@ -177,13 +197,12 @@
                     return {
                         "اسم الموقع": row["اسم الموقع"],
                         "المنطقة": row["المنطقة"],
-                        "المساحة (هكتار)": row["المساحة (هكتار)"],
+                        "المساحة": row["المساحة (هكتار)"],
                         "الحالة": status,
                         "قرار": row["قرار إضفاء الصبغة"] || "",
                         "ملاحظات": row["الحالة / ملاحظات"] || ""
                     };
                 });
-                // populate region filter
                 let regions = [...new Set(sitesData.map(s => s["المنطقة"]))].sort();
                 let regionSelect = document.getElementById('regionFilter');
                 regions.forEach(r => { let opt = document.createElement('option'); opt.value = r; opt.textContent = r; regionSelect.appendChild(opt); });
@@ -192,6 +211,7 @@
             error: function(err) { console.error(err); document.getElementById('statsLabel').innerHTML = "خطأ في تحميل البيانات"; }
         });
     }
+
     initMap();
     loadCSV();
     document.getElementById('regionFilter').addEventListener('change', filterSites);
